@@ -149,8 +149,10 @@ runs:
         fi
         SELECTOR=$(kubectl get deployment "$DEPLOYMENT" -n "$NS" \
           -o go-template='{{range $k,$v := .spec.selector.matchLabels}}{{$k}}={{$v}},{{end}}' | sed 's/,$//')
+        # Only sample a Running, non-terminating pod whose target container is Ready, so a
+        # still-draining previous-RS pod can't yield a stale/foreign digest (false mismatch).
         CURRENT=$(kubectl get pods -n "$NS" -l "$SELECTOR" -o json \
-          | jq -r --arg c "$CONTAINER" '[.items[].status.containerStatuses[]? | select(.name==$c) | .imageID] | .[0] // ""')
+          | jq -r --arg c "$CONTAINER" '[.items[] | select(.metadata.deletionTimestamp == null and .status.phase == "Running") | .status.containerStatuses[]? | select(.name==$c and .ready==true) | .imageID] | .[0] // ""')
         CURRENT_DIGEST="${CURRENT##*@}"
         if [ "$CURRENT_DIGEST" != "$EXPECTED" ]; then
           echo "::error::Pod is running '${CURRENT_DIGEST:-<none>}' but deploy set '$EXPECTED'. Possible Flux resume, pod restart with stale image, or cross-service overwrite."
