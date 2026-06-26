@@ -59,7 +59,15 @@ public class AzureIstioSecurityFilter extends OncePerRequestFilter {
 
         try {
             if (hasText(istioPayload)) {
-                JWTClaimsSet claimsSet = JWTClaimsSet.parse(new String(Base64.getDecoder().decode(istioPayload)));
+                // Istio's outputPayloadToHeader projects the JWT payload as base64url (RFC 4648 sec.5,
+                // often unpadded). Normalize to standard base64 + pad so a payload containing '-'/'_'
+                // decodes; a plain Base64.getDecoder() throws "Illegal base64 character" on those.
+                String normalizedPayload = istioPayload.replace('-', '+').replace('_', '/');
+                int padMod = normalizedPayload.length() % 4;
+                if (padMod > 0) {
+                    normalizedPayload = normalizedPayload + "====".substring(padMod);
+                }
+                JWTClaimsSet claimsSet = JWTClaimsSet.parse(new String(Base64.getDecoder().decode(normalizedPayload)));
 
                 // By default the authenticated is set to true as part PreAuthenticatedAuthenticationToken constructor.
                 SecurityContextHolder
