@@ -1,0 +1,15 @@
+# Service descriptor — owned by this repository, not by the template.
+#
+# Template-sync never overwrites `.spi/**`. Changes here are normal reviewed
+# pull requests and select only unprivileged build/test behaviour: no Azure
+# identity, cluster, namespace, environment, secret or workflow reference may
+# appear in this file (ADR-039).
+#
+# Schema: .github/scripts/service-config/schema.json
+# Generated during repository initialization; edit as the service evolves.
+
+schemaVersion: 1
+
+service:
+  name: partition
+  archetype: java-maven-azure
