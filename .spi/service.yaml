@@ -7,6 +7,7 @@
 #
 # Schema: .github/scripts/service-config/schema.json
 # Generated during repository initialization; edit as the service evolves.
+# Explicit Java lane used to regression-test multi-language template changes.
 
 schemaVersion: 1
 
