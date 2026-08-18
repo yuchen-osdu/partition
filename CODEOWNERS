@@ -1,0 +1,8 @@
+# BEGIN spi-service-descriptor (managed by SPI initialization — ADR-039)
+#
+# `.spi/service.yaml` selects this repository's build archetype, so it is
+# reviewed by the engineering system rather than by service maintainers alone.
+# Template-sync never overwrites `.spi/**` or this file.
+#
+/.spi/ @yuchen-wang99
+# END spi-service-descriptor
