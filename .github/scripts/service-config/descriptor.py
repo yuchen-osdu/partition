@@ -31,7 +31,7 @@ MAX_ITEMS = 50
 _KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
 _INT_RE = re.compile(r"^-?[0-9]+$")
 _PLAIN_FORBIDDEN_START = set("&*!|>%@`{}[],?")
-_PATH_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
+_PATH_RE = re.compile(r"^[A-Za-z0-9.][A-Za-z0-9._/-]*$")
 
 
 class DescriptorError(Exception):
@@ -96,6 +96,8 @@ class ResolvedConfig:
     python_unit_test_path: str = ""
     python_service_in_process_test_path: str = ""
     python_service_subprocess_test_path: str = ""
+    python_acceptance_test_path: str = ""
+    python_acceptance_runner_path: str = ""
     app_module: str = ""
     errors: List[ValidationError] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
@@ -139,6 +141,8 @@ class ResolvedConfig:
             "python_unit_test_path": self.python_unit_test_path,
             "python_service_in_process_test_path": self.python_service_in_process_test_path,
             "python_service_subprocess_test_path": self.python_service_subprocess_test_path,
+            "python_acceptance_test_path": self.python_acceptance_test_path,
+            "python_acceptance_runner_path": self.python_acceptance_runner_path,
             "app_module": self.app_module,
         }
 
@@ -606,9 +610,23 @@ def _validate_consistency(
             )
         )
 
-    allowed_test_types = {defaults["unitTestType"]}
+    acceptance_runner = _lookup(document, "tests.acceptance.runnerPath")
+    if isinstance(acceptance_runner, str) and not acceptance_runner.endswith(".py"):
+        errors.append(
+            ValidationError(
+                "tests.acceptance.runnerPath",
+                "invalid-path",
+                "Python acceptance runnerPath must end in '.py'",
+            )
+        )
+
     for suite, definition in document.get("tests", {}).items():
         suite_type = definition.get("type") if isinstance(definition, dict) else None
+        allowed_test_types = (
+            {"python"}
+            if suite == "acceptance" and archetype == "python-uv-fastapi"
+            else {defaults["unitTestType"]}
+        )
         if suite_type and suite_type not in allowed_test_types:
             errors.append(
                 ValidationError(
@@ -728,6 +746,10 @@ def resolve(
         config.python_service_subprocess_test_path = tests.get(
             "serviceSubprocess", {}
         ).get("path", "")
+        config.python_acceptance_test_path = tests.get("acceptance", {}).get("path", "")
+        config.python_acceptance_runner_path = tests.get("acceptance", {}).get(
+            "runnerPath", ""
+        )
         config.app_module = document.get("container", {}).get("appModule", "")
 
     if document["schemaVersion"] in schema.get("deprecatedSchemaVersions", []):
