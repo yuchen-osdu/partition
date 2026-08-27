@@ -1,16 +1,31 @@
 # Service descriptor — owned by this repository, not by the template.
 #
 # Template-sync never overwrites `.spi/**`. Changes here are normal reviewed
-# pull requests and select only unprivileged build/test behaviour: no Azure
-# identity, cluster, namespace, environment, secret or workflow reference may
-# appear in this file (ADR-039).
+# pull requests and select only unprivileged build/test behaviour. Environment
+# values are resolved from Stack facts written by spi onboard; identity,
+# deployment targets, secret values and workflow references stay outside.
 #
 # Schema: .github/scripts/service-config/schema.json
 # Generated during repository initialization; edit as the service evolves.
 # Explicit Java lane used to regression-test multi-language template changes.
 
-schemaVersion: 1
+schemaVersion: 2
 
 service:
   name: partition
   archetype: java-maven-azure
+
+build:
+  mavenProfiles: [core, azure]
+
+tests:
+  acceptance:
+    type: maven
+    path: partition-acceptance-test
+    mavenArguments: [verify]
+    bindings:
+      PARTITION_BASE_URL:
+        source: gateway
+        suffix: /
+      MY_TENANT:
+        source: partition
