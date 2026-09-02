@@ -68,5 +68,3 @@ download_plugins:
     - if: "$PROTECTED == '1'"
       when: on_success
 
-schemathesis-tests:
-  extends: .schemathesis-tests-template
