@@ -2,6 +2,13 @@
 
 The Partition service is responsible for creating and retrieving partition specific properties on behalf of other services whether they are secret values or not. It is a Maven multi-module project with each cloud implementation placed in its submodule.
 
+## Prerequisites
+
+- [JDK 25](https://adoptium.net/)
+- [Maven 3.9.16+](https://maven.apache.org/download.cgi)
+
+Community / core-plus modules compile and run on Java 25. For core-plus local setup, see [partition-core-plus/README.md](./partition-core-plus/README.md).
+
 ## Community Implementation
 It is containing an Open-Source version with os-osm Driver containing the postgres db for consumption. As of now the code is not having any authentication for core-plus as it is not having the infra for authentication.
 So, currently it's only enough to run and consume the service locally, for development and understanding purpose.
@@ -10,17 +17,7 @@ One could either spin up a postgres docker container locally, and use along with
 
 ## Running Locally - AWS
 
-Instructions for running the AWS implementation locally can be found [here](./provider/partition-aws/README.md)
-
-## Running Locally - Azure
-
-Instructions for running the Azure implementation locally can be found [here](./provider/partition-azure/README.md)
-
-## Running Locally - Google Cloud
-
-Instructions for running the Google Cloud implementation locally can be found [here](./provider/partition-gc/README.md)
-
-## Running Locally - IBM
+The AWS provider has been removed from this repository.
 
 ## Running Locally - Partition Core Plus
 Instructions for running the Partion Core Plus can be found [here](./partition-core-plus/README.md)
@@ -39,7 +36,7 @@ All the Swagger and OpenAPI related common properties are managed here [swagger.
 #### Server Url(full path vs relative path) configuration
 - `api.server.fullUrl.enabled=true` It will generate full server url in the OpenAPI swagger
 - `api.server.fullUrl.enabled=false` It will generate only the contextPath only
-- default value is false (Currently only in Azure it is enabled)
+- default value is false
 [Reference]:(https://springdoc.org/faq.html#_how_is_server_url_generated) 
 
 ## License
