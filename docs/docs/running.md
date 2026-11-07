@@ -9,17 +9,7 @@ One could either spin up a postgres docker container locally, and use along with
 
 ## Running Locally - AWS
 
-Instructions for running the AWS implementation locally can be found [here](https://community.opengroup.org/osdu/platform/system/partition/-/blob/master/provider/partition-aws/README.md)
-
-## Running Locally - Azure
-
-Instructions for running the Azure implementation locally can be found [here](https://community.opengroup.org/osdu/platform/system/partition/-/blob/master/provider/partition-azure/README.md)
-
-## Running Locally - Google Cloud
-
-Instructions for running the Google Cloud implementation locally can be found [here](https://community.opengroup.org/osdu/platform/system/partition/-/blob/master/provider/partition-gc/README.md)
-
-## Running Locally - IBM
+The AWS provider has been removed from this repository.
 
 ## Running Locally - Partition Core Plus
 Instructions for running the Partion Core Plus can be found [here](https://community.opengroup.org/osdu/platform/system/partition/-/blob/master/partition-core-plus/README.md)
@@ -38,5 +28,5 @@ All the Swagger and OpenAPI related common properties are managed here [swagger.
 #### Server Url(full path vs relative path) configuration
 - `api.server.fullUrl.enabled=true` It will generate full server url in the OpenAPI swagger
 - `api.server.fullUrl.enabled=false` It will generate only the contextPath only
-- default value is false (Currently only in Azure it is enabled)
+- default value is false
 [Reference]:(https://springdoc.org/faq.html#_how_is_server_url_generated) 

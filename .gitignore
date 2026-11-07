@@ -26,6 +26,7 @@ hs_err_pid*
 
 target/
 bin/
+.flattened-pom.xml
 load-tests/*.pyc
 # Eclipse
 .classpath
@@ -49,7 +50,6 @@ load-tests/*.pyc
 .DS_STORE
 
 dist/
-devops/ibm/ibm-partition-config/values-donotcommit.yaml
 
 # AI files
 .claude/
