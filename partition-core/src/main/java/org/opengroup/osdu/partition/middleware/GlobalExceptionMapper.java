@@ -14,12 +14,6 @@
 
 package org.opengroup.osdu.partition.middleware;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.gson.Gson;
 import org.opengroup.osdu.core.common.exception.NotFoundException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -36,6 +30,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
@@ -45,8 +45,6 @@ import java.util.List;
 @ControllerAdvice
 @RestController
 public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
-
-    private static final Gson gson = new Gson();
 
     @Autowired
     private JaxRsDpsLog jaxRsDpsLogger;
@@ -62,8 +60,8 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
                 new AppException(HttpStatus.NOT_FOUND.value(), "Resource not found.", e.getMessage()));
     }
 
-    @ExceptionHandler(JsonProcessingException.class)
-    protected ResponseEntity<Object> handleValidationException(JsonProcessingException e) {
+    @ExceptionHandler(JacksonException.class)
+    protected ResponseEntity<Object> handleValidationException(JacksonException e) {
         return this.getErrorResponse(
                 new AppException(HttpStatus.BAD_REQUEST.value(), "Bad JSON format", e.getMessage()));
     }
@@ -98,7 +96,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
             msgs.add("Invalid payload");
         }
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new JsonMapper();
         ArrayNode array = mapper.valueToTree(msgs);
         JsonNode result = mapper.createObjectNode().set("errors", array);
 
@@ -133,6 +131,6 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
             this.jaxRsDpsLogger.warning(exceptionMsg, e);
         }
 
-        return new ResponseEntity<>(gson.toJson(exceptionMsg), HttpStatus.resolve(e.getError().getCode()));
+        return new ResponseEntity<>(e.getError(), HttpStatus.resolve(e.getError().getCode()));
     }
 }

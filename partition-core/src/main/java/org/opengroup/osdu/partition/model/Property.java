@@ -14,6 +14,8 @@
 
 package org.opengroup.osdu.partition.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,9 +24,15 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+// Jackson 3 would otherwise bind through the all-args constructor and skip the @Builder.Default values
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
+@Schema(description = "A single partition property entry, paired with a sensitivity flag")
 public class Property {
     @Builder.Default
+    @Schema(description = "When true, the value is treated as a secret and resolved through the configured secret store",
+            example = "false")
     private boolean sensitive = false;
+    @Schema(description = "The property value. May be a literal or a reference to a secret when sensitive=true",
+            example = "shared")
     private Object value;
 }
