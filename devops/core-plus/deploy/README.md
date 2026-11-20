@@ -46,7 +46,8 @@ First you need to set variables in **values.yaml** file using any code editor. S
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
-**global.domain** | your domain | string | - | yes
+**global.domain** | your domain (used for the Keycloak issuer). The route host comes from `global.hostname` | string | - | yes
+**global.hostname** | host the `HTTPRoute` attaches to when `httpRoute.hostnames` is empty, ex `osdu.example.com` | string | `""` | only if `httpRoute.enabled` is true and `httpRoute.hostnames` is empty
 **global.useHttps** | defines whether to use HTTPS instead of HTTP for external minio s3 endpoint connection | boolean | true | yes
 **global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | true | yes
 **global.dataPartitionId** | data partition id | string | - | yes
@@ -132,12 +133,67 @@ These variables are shared by both partition service and bootstrap components.
 
 ---
 
+### Routing (HTTPRoute)
+
+The chart owns the routing for the service. It renders a Gateway API `HTTPRoute`, disabled by default. The chart no longer ships an Istio `VirtualService`.
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+**httpRoute.enabled** | render the `HTTPRoute` | boolean | `false` | yes
+**httpRoute.name** | route name. When empty the name is `<release>-route`, which differs from any route of the same name defined outside this chart | string | `""` | no
+**httpRoute.parentRefs** | gateways the route attaches to | list | `cimpl-gateway` in `istio-system` | yes
+**httpRoute.hostnames** | hosts the route serves. When empty, `global.hostname` is used | list | `[]` | one of `httpRoute.hostnames` or `global.hostname`
+**httpRoute.routes** | one rule per entry, see below | list | `/api/partition/` | yes
+
+The render fails when `httpRoute.enabled` is true and both `httpRoute.hostnames` and `global.hostname` are empty, so the route is never exposed on all hosts.
+
+Each entry of `httpRoute.routes` accepts:
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+**path** | path to match | string | - | yes
+**pathType** | match type, `PathPrefix` or `Exact` | string | `PathPrefix` | no
+**serviceName** | backend Service name | string | `conf.appName` | no
+**port** | backend Service port | integer | `80` | no
+**filters** | Gateway API filters, for example `URLRewrite` | list | - | no
+
+Example, a route with a rewrite and another port:
+
+```yaml
+httpRoute:
+  enabled: true
+  hostnames:
+    - osdu.example.com
+  routes:
+    - path: /api/partition/
+    - path: /other/
+      port: 9002
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+```
+
 ### Install the helm chart
 
 Run this command from within this directory:
 
 ```console
 helm install core-partition-deploy .
+```
+
+To expose the service through the Gateway API:
+
+```console
+helm install core-partition-deploy . --set httpRoute.enabled=true --set global.hostname=osdu.example.com
+```
+
+To check the rendered route without installing:
+
+```console
+helm template core-partition-deploy . --set httpRoute.enabled=true --set global.hostname=osdu.example.com -s templates/httproute.yaml
 ```
 
 ## Uninstalling the Chart
